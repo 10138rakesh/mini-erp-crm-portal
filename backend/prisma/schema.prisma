@@ -1,0 +1,80 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  name      String
+  role      String   // Admin, Sales, Warehouse, Accounts
+  createdAt DateTime @default(now())
+}
+
+model Customer {
+  id           String        @id @default(uuid())
+  name         String
+  mobile       String
+  email        String
+  businessName String
+  gstNumber    String?
+  customerType String        // Retail, Wholesale, Distributor
+  address      String
+  status       String        // Lead, Active, Inactive
+  followUpDate DateTime?
+  notes        String?
+  followUps    FollowUpNote[]
+  challans     Challan[]
+  createdAt    DateTime      @default(now())
+}
+
+model FollowUpNote {
+  id         String   @id @default(uuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  note       String
+  createdBy  String
+  createdAt  DateTime @default(now())
+}
+
+model Product {
+  id            String          @id @default(uuid())
+  name          String
+  sku           String          @unique
+  category      String
+  unitPrice     Float
+  currentStock  Int
+  minStockAlert Int
+  location      String
+  movements     StockMovement[]
+  createdAt     DateTime        @default(now())
+}
+
+model StockMovement {
+  id           String   @id @default(uuid())
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity     Int
+  movementType String   // IN, OUT
+  reason       String   // Purchase, Adjustment, Sales Challan, etc.
+  createdBy    String
+  timestamp    DateTime @default(now())
+}
+
+model Challan {
+  id            String   @id @default(uuid())
+  challanNumber String   @unique
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id])
+  products      String   // Serialized JSON array of snapshots: { productId, name, sku, price, quantity }
+  totalQuantity Int
+  totalAmount   Float
+  status        String   // Draft, Confirmed, Cancelled
+  createdBy     String
+  createdAt     DateTime @default(now())
+}
