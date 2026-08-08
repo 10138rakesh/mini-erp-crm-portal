@@ -9,7 +9,7 @@ RUN npm install
 # Copy application source and configurations
 COPY . .
 
-# Generate Prisma client for SQLite
+# Generate Prisma client for PostgreSQL
 RUN npx prisma generate
 
 # Compile TypeScript
